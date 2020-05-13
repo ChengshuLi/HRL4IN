@@ -27,7 +27,6 @@ class Net(nn.Module):
                  hidden_size,
                  single_branch_size=256,
                  cnn_layers_params=None,
-                 old_network=False
                  ):
         super().__init__()
 
@@ -71,9 +70,8 @@ class Net(nn.Module):
         )
         self._hidden_size = hidden_size
         self._single_branch_size = single_branch_size
-        self._old_network = old_network
 
-        if not old_network and self._n_additional_rnn_input != 0:
+        if self._n_additional_rnn_input != 0:
             self.feature_linear = nn.Sequential(
                 nn.Linear(self._n_additional_rnn_input, self._single_branch_size),
                 nn.ReLU()
@@ -85,14 +83,11 @@ class Net(nn.Module):
             self._cnn_layers_params = cnn_layers_params
         self.cnn = self._init_perception_model(observation_space)
 
-        if old_network:
-            self._rnn_input_size = self._hidden_size + self._n_additional_rnn_input
-        else:
-            self._rnn_input_size = 0
-            if not self.is_blind:
-                self._rnn_input_size += single_branch_size
-            if self._n_additional_rnn_input != 0:
-                self._rnn_input_size += single_branch_size
+        self._rnn_input_size = 0
+        if not self.is_blind:
+            self._rnn_input_size += single_branch_size
+        if self._n_additional_rnn_input != 0:
+            self._rnn_input_size += single_branch_size
 
         assert self._rnn_input_size != 0, "the network has no input"
 
@@ -166,7 +161,7 @@ class Net(nn.Module):
             cnn_layers += [
                 Flatten(),
                 nn.Linear(self._cnn_layers_params[-1][0] * cnn_dims[0] * cnn_dims[1],
-                          self._hidden_size if self._old_network else self._single_branch_size),
+                          self._single_branch_size),
                 nn.ReLU(),
             ]
             return nn.Sequential(*cnn_layers)
@@ -307,8 +302,7 @@ class Net(nn.Module):
             if self._n_action_mask > 0:
                 additional_rnn_input.append(observations["action_mask"])
             x = torch.cat(additional_rnn_input, dim=1)
-            if not self._old_network:
-                x = self.feature_linear(x)
+            x = self.feature_linear(x)
 
         if not self.is_blind:
             perception_embed = self.forward_perception_model(observations)

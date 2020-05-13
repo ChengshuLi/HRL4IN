@@ -15,17 +15,17 @@ import argparse
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from gibson2learning.core.logging import logger
-from gibson2learning.baselines.rl.ppo import PPO, Policy, RolloutStorage
-from gibson2learning.baselines.utils.utils import *
-from gibson2learning.baselines.utils.args import *
+import hrl4in
+from hrl4in.envs.toy_env.toy_env import ToyEnv
+from hrl4in.utils.logging import logger
+from hrl4in.rl.ppo import PPO, Policy, RolloutStorage
+from hrl4in.utils.utils import *
+from hrl4in.utils.args import *
 
 import gibson2
 from gibson2.envs.parallel_env import ParallelNavEnvironment
 from gibson2.envs.locomotor_env import NavigateEnv, NavigateRandomEnv, InteractiveNavigateEnv
 
-from toyenv.env import ToyEnv
-import toyenv
 
 
 def evaluate(envs,
@@ -207,7 +207,7 @@ def main():
     if args.env_type == "gibson" or args.env_type == "interactive_gibson":
         config_file = os.path.join(os.path.dirname(gibson2.__file__), "../examples/configs", args.config_file)
     elif args.env_type == "toy":
-        config_file = os.path.join(os.path.dirname(toyenv.__file__), args.config_file)
+        config_file = os.path.join(os.path.dirname(hrl4in.__file__), 'envs/toy_env', args.config_file)
 
     assert os.path.isfile(config_file), "config file does not exist: {}".format(config_file)
 

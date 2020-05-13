@@ -10,17 +10,12 @@ import gym
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from gibson2learning.core.logging import logger
-from gibson2learning.baselines.rl.ppo import PPO, Policy, RolloutStorage, MetaPolicy, AsyncRolloutStorage
-from gibson2learning.baselines.utils.utils import *
-from gibson2learning.baselines.utils.args import *
-
-import gibson2
-from gibson2.envs.parallel_env import ParallelNavEnvironment
-from gibson2.envs.locomotor_env import NavigateEnv, NavigateRandomEnv
-
-from toyenv.env import ToyEnv
-import toyenv
+import hrl4in
+from hrl4in.envs.toy_env.toy_env import ToyEnv
+from hrl4in.utils.logging import logger
+from hrl4in.rl.ppo import PPO, Policy, RolloutStorage, MetaPolicy, AsyncRolloutStorage
+from hrl4in.utils.utils import *
+from hrl4in.utils.args import *
 
 from IPython import embed
 import matplotlib.pyplot as plt
@@ -405,11 +400,7 @@ def main():
     for p in sorted(list(vars(args))):
         logger.info("{}: {}".format(p, getattr(args, p)))
 
-    if args.env_type == "gibson":
-        config_file = os.path.join(os.path.dirname(gibson2.__file__), "../examples/configs", args.config_file)
-    elif args.env_type == "toy":
-        config_file = os.path.join(os.path.dirname(toyenv.__file__), args.config_file)
-
+    config_file = os.path.join(os.path.dirname(hrl4in.__file__), 'envs/toy_env', args.config_file)
     assert os.path.isfile(config_file), "config file does not exist: {}".format(config_file)
 
     env_config = parse_config(config_file)
@@ -417,27 +408,10 @@ def main():
         logger.info("{}: {}".format(k, v))
 
     def load_env(env_mode, device_idx):
-        if args.env_type == "gibson":
-            if args.random_position:
-                return NavigateRandomEnv(config_file=config_file,
-                                         mode=env_mode,
-                                         action_timestep=args.action_timestep,
-                                         physics_timestep=args.physics_timestep,
-                                         random_height=args.random_height,
-                                         automatic_reset=True,
-                                         device_idx=device_idx)
-            else:
-                return NavigateEnv(config_file=config_file,
-                                   mode=env_mode,
-                                   action_timestep=args.action_timestep,
-                                   physics_timestep=args.physics_timestep,
-                                   automatic_reset=True,
-                                   device_idx=device_idx)
-        elif args.env_type == "toy":
-            return ToyEnv(config_file=config_file,
-                          should_normalize_observation=True,
-                          automatic_reset=True,
-                          visualize=False)
+        return ToyEnv(config_file=config_file,
+                      should_normalize_observation=True,
+                      automatic_reset=True,
+                      visualize=False)
 
     sim_gpu_id = [int(gpu_id) for gpu_id in args.sim_gpu_id.split(",")]
     env_id_to_which_gpu = np.linspace(0,
@@ -485,10 +459,7 @@ def main():
     env_door_col = env_config.get("door_col")
 
     # (output_channel, kernel_size, stride, padding)
-    if args.env_type == "gibson":
-        cnn_layers_params = [(32, 8, 4, 0), (64, 4, 2, 0), (64, 3, 1, 0)]
-    elif args.env_type == "toy":
-        cnn_layers_params = [(32, 3, 1, 1), (32, 3, 1, 1), (32, 3, 1, 1)]
+    cnn_layers_params = [(32, 3, 1, 1), (32, 3, 1, 1), (32, 3, 1, 1)]
 
     meta_observation_space = train_envs.observation_space
     sensor_space = train_envs.observation_space.spaces["sensor"]
@@ -527,6 +498,7 @@ def main():
         observation_space=meta_observation_space,
         subgoal_space=subgoal_space,
         use_action_masks=args.use_action_masks,
+        action_masks_dim=action_mask_choices.shape[0],
         hidden_size=args.hidden_size,
         cnn_layers_params=cnn_layers_params,
         initial_stddev=initial_stddev,

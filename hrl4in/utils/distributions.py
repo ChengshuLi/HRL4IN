@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from gibson2learning.baselines.utils.networks import AddBias
+from hrl4in.utils.networks import AddBias
 
 EPS = 1e-6
 

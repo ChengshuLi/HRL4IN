@@ -8,8 +8,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from gibson2learning.baselines.utils.distributions import CategoricalNet, DiagGaussianNet, MultiCategoricalNet
-from gibson2learning.baselines.utils.networks import Net
+from hrl4in.utils.distributions import CategoricalNet, DiagGaussianNet, MultiCategoricalNet
+from hrl4in.utils.networks import Net
 
 EPS = 1e-6
 OLD_NETWORK = False
@@ -29,7 +29,6 @@ class Policy(nn.Module):
             observation_space=observation_space,
             hidden_size=hidden_size,
             cnn_layers_params=cnn_layers_params,
-            old_network=OLD_NETWORK,
         )
         self.stddev_anneal_schedule = stddev_anneal_schedule
         if stddev_anneal_schedule is not None:

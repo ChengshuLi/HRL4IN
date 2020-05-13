@@ -10,13 +10,13 @@ import torch.nn as nn
 from gibson2learning.baselines.utils.distributions import DiagGaussianNet, CategoricalNet
 from gibson2learning.baselines.utils.networks import Net
 
-OLD_NETWORK = False
 
 class MetaPolicy(nn.Module):
     def __init__(self,
                  observation_space,
                  subgoal_space,
                  use_action_masks=False,
+                 action_masks_dim=3,
                  hidden_size=512,
                  cnn_layers_params=None,
                  initial_stddev=1.0 / 3.0,
@@ -27,7 +27,6 @@ class MetaPolicy(nn.Module):
             observation_space=observation_space,
             hidden_size=hidden_size,
             cnn_layers_params=cnn_layers_params,
-            old_network=OLD_NETWORK,
         )
 
         assert len(subgoal_space.shape) == 1, 'only supports one dimensional subgoal space'
@@ -43,7 +42,7 @@ class MetaPolicy(nn.Module):
 
         # base + arm or base-only
         if self.use_action_masks:
-            self.action_mask_distribution = CategoricalNet(self.net.output_size, 2)
+            self.action_mask_distribution = CategoricalNet(self.net.output_size, action_masks_dim)
 
     def forward(self, *x):
         raise NotImplementedError

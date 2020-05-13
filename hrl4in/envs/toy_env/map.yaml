@@ -1,0 +1,15 @@
+width: 11
+height: 11
+
+door_row: 5
+door_col: 5
+
+door_max_state: 5
+
+sparse_reward: true
+
+outputs: [sensor, auxiliary_sensor]
+
+local_map_range: 5
+
+max_step: 500
