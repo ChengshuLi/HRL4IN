@@ -2,6 +2,10 @@ Code release for the CoRL 2019 paper: [HRL4IN: Hierarchical Reinforcement Learni
 
 The PPO implementation is partially adopted from [pytorch-a2c-ppo-acktr-gail](https://github.com/ikostrikov/pytorch-a2c-ppo-acktr-gail) and [habitat-api](https://github.com/facebookresearch/habitat-api)
 
+### Dependency
+* torch==1.1.0
+* torchvision==0.2.2
+
 ### Installation
 1. Install [iGibson](https://github.com/StanfordVL/iGibson) with the `hrl4in` branch.
 ```
