@@ -17,6 +17,8 @@ from hrl4in.rl.ppo import PPO, Policy, RolloutStorage, MetaPolicy, AsyncRolloutS
 from hrl4in.utils.utils import *
 from hrl4in.utils.args import *
 
+from gibson2.envs.parallel_env import ParallelNavEnvironment
+
 from IPython import embed
 import matplotlib.pyplot as plt
 
