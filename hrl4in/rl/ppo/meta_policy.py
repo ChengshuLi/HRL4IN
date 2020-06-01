@@ -7,8 +7,8 @@
 import torch
 import torch.nn as nn
 
-from gibson2learning.baselines.utils.distributions import DiagGaussianNet, CategoricalNet
-from gibson2learning.baselines.utils.networks import Net
+from hrl4in.utils.distributions import DiagGaussianNet, CategoricalNet
+from hrl4in.utils.networks import Net
 
 
 class MetaPolicy(nn.Module):
