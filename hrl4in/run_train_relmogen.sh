@@ -19,7 +19,7 @@ name="exp"
 arena="button_door"
 run="0"
 
-log_dir="hrl4in_arena_"$arena"_run_"$run"_test"
+log_dir="/result/hrl4in_arena_"$arena"_run_"$run"_test"
 echo $log_dir
 
 python -u train_hrl_relmogen.py \
@@ -40,7 +40,7 @@ python -u train_hrl_relmogen.py \
    --use-linear-clip-decay \
    --entropy-coef 0.01 \
    --log-interval 1 \
-   --experiment-folder "ckpt_rss_ws/"$log_dir \
+   --experiment-folder $log_dir \
    --time-scale 30 \
    --intrinsic-reward-scaling $irs \
    --subgoal-achieved-reward $sgr \

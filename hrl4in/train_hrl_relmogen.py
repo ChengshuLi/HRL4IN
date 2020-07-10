@@ -238,7 +238,7 @@ def evaluate(args,
         subgoals_done = (
                 subgoals_achieved  # subgoals achieved
                 | (current_subgoals_steps == args.time_scale)  # subgoals time up
-                | (1.0 - masks).byte()  # episode is done
+                | (1.0 - masks).bool()  # episode is done
         )
         subgoals_done = subgoals_done.float()
         subgoals_achieved = subgoals_achieved.float()
@@ -372,7 +372,6 @@ def main():
             device_idx=device_idx,
             random_height=False,
             automatic_reset=True,
-            eval=False,
             arena=args.arena,
         )
 
@@ -875,7 +874,7 @@ def main():
             subgoals_done = (
                     subgoals_achieved  # subgoals achieved
                     | (current_subgoals_steps == args.time_scale)  # subgoals time up
-                    | (1.0 - masks).byte()  # episode is done
+                    | (1.0 - masks).bool()  # episode is done
             )
             subgoals_done = subgoals_done.float()
             subgoals_achieved = subgoals_achieved.float()
