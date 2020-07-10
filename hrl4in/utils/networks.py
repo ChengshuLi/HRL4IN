@@ -35,10 +35,10 @@ class Net(nn.Module):
         else:
             self._n_non_vis_sensor = 0
 
-        if "auxiliary_sensor" in observation_space.spaces:
-            self._n_auxiliary_sensor = observation_space.spaces["auxiliary_sensor"].shape[0]
-        else:
-            self._n_auxiliary_sensor = 0
+        # if "auxiliary_sensor" in observation_space.spaces:
+        #     self._n_auxiliary_sensor = observation_space.spaces["auxiliary_sensor"].shape[0]
+        # else:
+        #     self._n_auxiliary_sensor = 0
 
         if "scan" in observation_space.spaces:
             self._n_scan = observation_space.spaces["scan"].shape[0]
@@ -61,32 +61,39 @@ class Net(nn.Module):
             self._n_action_mask = 0
 
         self._n_additional_rnn_input = (
-                self._n_non_vis_sensor +
-                self._n_auxiliary_sensor +
-                self._n_subgoal +
-                self._n_subgoal_mask +
-                self._n_action_mask +
-                self._n_scan
+            self._n_non_vis_sensor +
+            self._n_subgoal +
+            self._n_subgoal_mask +
+            self._n_action_mask
         )
         self._hidden_size = hidden_size
         self._single_branch_size = single_branch_size
 
         if self._n_additional_rnn_input != 0:
             self.feature_linear = nn.Sequential(
-                nn.Linear(self._n_additional_rnn_input, self._single_branch_size),
+                nn.Linear(self._n_additional_rnn_input,
+                          self._single_branch_size),
                 nn.ReLU()
             )
 
         if cnn_layers_params is None:
-            self._cnn_layers_params = [(32, 8, 4, 0), (64, 4, 2, 0), (64, 3, 1, 0)]
+            self._cnn_layers_params = [
+                (32, 8, 4, 0), (64, 4, 2, 0), (64, 3, 1, 0)]
         else:
             self._cnn_layers_params = cnn_layers_params
         self.cnn = self._init_perception_model(observation_space)
+
+        if self._n_scan > 0:
+            self._cnn_1d_layers_params = [
+                (32, 8, 4, 0), (64, 4, 2, 0), (64, 3, 1, 0)]
+        self.cnn_1d = self._init_lidar_model(observation_space)
 
         self._rnn_input_size = 0
         if not self.is_blind:
             self._rnn_input_size += single_branch_size
         if self._n_additional_rnn_input != 0:
+            self._rnn_input_size += single_branch_size
+        if self._n_scan > 0:
             self._rnn_input_size += single_branch_size
 
         assert self._rnn_input_size != 0, "the network has no input"
@@ -96,6 +103,44 @@ class Net(nn.Module):
 
         self.layer_init()
         self.train()
+
+    def _init_lidar_model(self, observation_space):
+        self._n_input_scan = observation_space.spaces["scan"].shape[1]
+        cnn_dim = observation_space.spaces["scan"].shape[0]
+        for _, kernel_size, stride, padding in self._cnn_1d_layers_params:
+            cnn_dim = self._conv_1d_output_dim(
+                dimension=cnn_dim,
+                padding=padding,
+                dilation=1,
+                kernel_size=kernel_size,
+                stride=stride,
+            )
+
+        cnn_layers = []
+        prev_out_channels = None
+        for i, (out_channels, kernel_size, stride, padding) in enumerate(self._cnn_1d_layers_params):
+            if i == 0:
+                in_channels = self._n_input_scan
+            else:
+                in_channels = prev_out_channels
+            cnn_layers.append(nn.Conv1d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=padding,
+            ))
+            if i != len(self._cnn_1d_layers_params) - 1:
+                cnn_layers.append(nn.ReLU())
+            prev_out_channels = out_channels
+
+        cnn_layers += [
+            Flatten(),
+            nn.Linear(self._cnn_1d_layers_params[-1][0] * cnn_dim,
+                      self._single_branch_size),
+            nn.ReLU(),
+        ]
+        return nn.Sequential(*cnn_layers)
 
     def _init_perception_model(self, observation_space):
         if "rgb" in observation_space.spaces:
@@ -119,13 +164,17 @@ class Net(nn.Module):
             self._n_input_local_map = 0
 
         if self._n_input_rgb > 0:
-            cnn_dims = np.array(observation_space.spaces["rgb"].shape[:2], dtype=np.float32)
+            cnn_dims = np.array(
+                observation_space.spaces["rgb"].shape[:2], dtype=np.float32)
         elif self._n_input_depth > 0:
-            cnn_dims = np.array(observation_space.spaces["depth"].shape[:2], dtype=np.float32)
+            cnn_dims = np.array(
+                observation_space.spaces["depth"].shape[:2], dtype=np.float32)
         elif self._n_input_global_map > 0:
-            cnn_dims = np.array(observation_space.spaces["global_map"].shape[1:3], dtype=np.float32)
+            cnn_dims = np.array(
+                observation_space.spaces["global_map"].shape[1:3], dtype=np.float32)
         elif self._n_input_local_map > 0:
-            cnn_dims = np.array(observation_space.spaces["local_map"].shape[1:3], dtype=np.float32)
+            cnn_dims = np.array(
+                observation_space.spaces["local_map"].shape[1:3], dtype=np.float32)
 
         if self.is_blind:
             return nn.Sequential()
@@ -135,7 +184,8 @@ class Net(nn.Module):
                     dimension=cnn_dims,
                     padding=np.array([padding, padding], dtype=np.float32),
                     dilation=np.array([1, 1], dtype=np.float32),
-                    kernel_size=np.array([kernel_size, kernel_size], dtype=np.float32),
+                    kernel_size=np.array(
+                        [kernel_size, kernel_size], dtype=np.float32),
                     stride=np.array([stride, stride], dtype=np.float32),
                 )
 
@@ -144,7 +194,7 @@ class Net(nn.Module):
             for i, (out_channels, kernel_size, stride, padding) in enumerate(self._cnn_layers_params):
                 if i == 0:
                     in_channels = self._n_input_rgb + self._n_input_depth + \
-                                  self._n_input_global_map + self._n_input_local_map
+                        self._n_input_global_map + self._n_input_local_map
                 else:
                     in_channels = prev_out_channels
                 cnn_layers.append(nn.Conv2d(
@@ -177,10 +227,21 @@ class Net(nn.Module):
         for i in range(len(dimension)):
             out_dimension.append(
                 int(np.floor(
-                    ((dimension[i] + 2 * padding[i] - dilation[i] * (kernel_size[i] - 1) - 1) / stride[i]) + 1
+                    ((dimension[i] + 2 * padding[i] - dilation[i]
+                      * (kernel_size[i] - 1) - 1) / stride[i]) + 1
                 ))
             )
         return tuple(out_dimension)
+
+    def _conv_1d_output_dim(self, dimension, padding, dilation, kernel_size, stride):
+        """Calculates the output height and width based on the input
+        height and width to the convolution layer.
+
+        ref: https://pytorch.org/docs/master/nn.html#torch.nn.Conv2d
+        """
+        out_dimension = int(np.floor(
+            ((dimension + 2 * padding - dilation * (kernel_size - 1) - 1) / stride) + 1))
+        return out_dimension
 
     @property
     def output_size(self):
@@ -189,6 +250,12 @@ class Net(nn.Module):
     def layer_init(self):
         for layer in self.cnn:
             if isinstance(layer, (nn.Conv2d, nn.Linear)):
+                # nn.init.orthogonal_(layer.weight, nn.init.calculate_gain("relu"))
+                nn.init.orthogonal_(layer.weight, gain=1)
+                nn.init.constant_(layer.bias, val=0)
+
+        for layer in self.cnn_1d:
+            if isinstance(layer, (nn.Conv1d, nn.Linear)):
                 # nn.init.orthogonal_(layer.weight, nn.init.calculate_gain("relu"))
                 nn.init.orthogonal_(layer.weight, gain=1)
                 nn.init.constant_(layer.bias, val=0)
@@ -286,15 +353,22 @@ class Net(nn.Module):
         cnn_input = torch.cat(cnn_input, dim=1)
         return self.cnn(cnn_input)
 
+    def forward_lidar_model(self, observations):
+        lidar_input = observations["scan"]
+        # permute tensor to dimension [BATCH x CHANNEL x WIDTH]
+        lidar_input = lidar_input.permute(0, 2, 1)
+        return self.cnn_1d(lidar_input)
+
     def forward(self, observations, rnn_hidden_states, masks):
+        x = None
         if self._n_additional_rnn_input > 0:
             additional_rnn_input = []
             if self._n_non_vis_sensor > 0:
                 additional_rnn_input.append(observations["sensor"])
-            if self._n_auxiliary_sensor > 0:
-                additional_rnn_input.append(observations["auxiliary_sensor"])
-            if self._n_scan > 0:
-                additional_rnn_input.append(observations["scan"])
+            # if self._n_auxiliary_sensor > 0:
+            #     additional_rnn_input.append(observations["auxiliary_sensor"])
+            # if self._n_scan > 0:
+            #     additional_rnn_input.append(observations["scan"])
             if self._n_subgoal > 0:
                 additional_rnn_input.append(observations["subgoal"])
             if self._n_subgoal_mask > 0:
@@ -306,10 +380,17 @@ class Net(nn.Module):
 
         if not self.is_blind:
             perception_embed = self.forward_perception_model(observations)
-            if self._n_additional_rnn_input > 0:
-                x = torch.cat([perception_embed, x], dim=1)
-            else:
+            if x is None:
                 x = perception_embed
+            else:
+                x = torch.cat([x, perception_embed], dim=1)
+
+        if self._n_scan > 0:
+            lidar_embed = self.forward_lidar_model(observations)
+            if x is None:
+                x = lidar_embed
+            else:
+                x = torch.cat([x, lidar_embed], dim=1)
 
         x, rnn_hidden_states = self.forward_rnn(x, rnn_hidden_states, masks)
 

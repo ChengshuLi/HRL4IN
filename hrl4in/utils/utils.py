@@ -80,6 +80,29 @@ def rotate_torch_vector(vector, roll, pitch, yaw):
     vector = vector.squeeze(2)
     return vector
 
+def rotate_torch_vector_2d(vector, yaw):
+    num_envs = vector.shape[0]
+    device = vector.device
+    rot_z = torch.zeros((num_envs, 3, 3), device=device)
+    rot_z[:, 0, 0] = torch.cos(yaw)
+    rot_z[:, 0, 1] = -torch.sin(yaw)
+    rot_z[:, 0, 2] = 0.0
+    rot_z[:, 1, 0] = torch.sin(yaw)
+    rot_z[:, 1, 1] = torch.cos(yaw)
+    rot_z[:, 1, 2] = 0.0
+    rot_z[:, 2, 0] = 0.0
+    rot_z[:, 2, 1] = 0.0
+    rot_z[:, 2, 2] = 1.0
+    vector = vector.unsqueeze(2)
+    vector = torch.bmm(rot_z, vector)
+    vector = vector.squeeze(2)
+    return vector
+
+def local_to_global(vector_in_local_frame, yaw):
+    return rotate_torch_vector_2d(vector_in_local_frame, yaw)
+
+def global_to_local(vector_in_global_frame, yaw):
+    return rotate_torch_vector_2d(vector_in_global_frame, -yaw)
 
 def set_up_experiment_folder(folder, ckpt_idx):
     if not os.path.isdir(folder):

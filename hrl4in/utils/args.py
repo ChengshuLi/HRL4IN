@@ -3,8 +3,8 @@ def add_env_args(parser):
     group.add_argument(
         "--env-type",
         required=True,
-        help="env type: [gibson|interactive_gibson|toy]",
-        choices=["gibson", "interactive_gibson", "toy"]
+        help="env type: [gibson|interactive_gibson|toy|relmogen]",
+        choices=["gibson", "interactive_gibson", "toy", "relmogen"]
     )
     group.add_argument(
         "--config-file",
