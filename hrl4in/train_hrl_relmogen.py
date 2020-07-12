@@ -363,10 +363,11 @@ def main():
     for (k, v) in env_config.items():
         logger.info("{}: {}".format(k, v))
 
-    def load_env(env_mode, device_idx):
+    def load_env(model_id, env_mode, device_idx):
         return MotionPlanningBaseArmHRL4INEnv(
             config_file=config_file,
             mode=env_mode,
+            model_id=model_id,
             action_timestep=args.action_timestep,
             physics_timestep=args.physics_timestep,
             device_idx=device_idx,
@@ -375,18 +376,25 @@ def main():
             arena=args.arena,
         )
 
+    model_ids = args.model_ids.split(',')
+    if model_ids is None:
+        model_ids = [None] * num_parallel_environments
+    else:
+        assert len(model_ids) == args.num_train_processes, \
+                'model ids provided, but length not equal to num_train_processes'
+
     sim_gpu_id = [int(gpu_id) for gpu_id in args.sim_gpu_id.split(",")]
     env_id_to_which_gpu = np.linspace(0,
                                       len(sim_gpu_id),
                                       num=args.num_train_processes + args.num_eval_processes,
                                       dtype=np.int,
                                       endpoint=False)
-    train_envs = [lambda device_idx=sim_gpu_id[env_id_to_which_gpu[env_id]]: load_env("headless", device_idx)
+    train_envs = [lambda device_idx=sim_gpu_id[env_id_to_which_gpu[env_id]], model_id=model_ids[env_id]: load_env(model_id, "headless", device_idx)
                   for env_id in range(args.num_train_processes)]
     train_envs = ParallelNavEnvironment(train_envs, blocking=False)
-    eval_envs = [lambda device_idx=sim_gpu_id[env_id_to_which_gpu[env_id]]: load_env("headless", device_idx)
+    eval_envs = [lambda device_idx=sim_gpu_id[env_id_to_which_gpu[env_id]]: load_env(None, "headless", device_idx)
                  for env_id in range(args.num_train_processes, args.num_train_processes + args.num_eval_processes - 1)]
-    eval_envs += [lambda: load_env(args.env_mode, sim_gpu_id[env_id_to_which_gpu[-1]])]
+    eval_envs += [lambda: load_env(None, args.env_mode, sim_gpu_id[env_id_to_which_gpu[-1]])]
     eval_envs = ParallelNavEnvironment(eval_envs, blocking=False)
 
     logger.info(train_envs.observation_space)

@@ -2,27 +2,24 @@
 
 gpu_g="0"
 gpu_c="1"
-reward_type="dense"
-pos="fixed"
 irs="30.0"
 sgr="0.0"
 lr="1e-4"
 meta_lr="1e-5"        # 1e-4, 1e-5
 fr_lr="0"             # 0, 100
-death="30.0"
 init_std_dev_xy="0.6" # 0.6, 1.2
 init_std_dev_z="0.1"
 failed_pnt="0.0"      # 0.0, -0.2
 num_steps="1024"
 ext_col="0.0"         # 0.0, 0.5, 1.0, 2.0
-name="exp"
-arena="button_door"
+arena="push_door"
 run="0"
 
-log_dir="/result/hrl4in_arena_"$arena"_run_"$run"_test"
+log_dir="/result/hrl4in_baseline_"$arena"_"$run
 echo $log_dir
+mkdir -p $log_dir
 
-python -u train_hrl_relmogen.py \
+nohup python -u train_hrl_relmogen.py \
    --use-gae \
    --sim-gpu-id $gpu_g \
    --pth-gpu-id $gpu_c \
@@ -31,11 +28,11 @@ python -u train_hrl_relmogen.py \
    --freeze-lr-n-updates $fr_lr \
    --clip-param 0.1 \
    --value-loss-coef 0.5 \
-   --num-train-processes 1 \
+   --num-train-processes 9 \
    --num-eval-processes 1 \
    --num-steps $num_steps \
    --num-mini-batch 1 \
-   --num-updates 50000 \
+   --num-updates 100000 \
    --use-linear-lr-decay \
    --use-linear-clip-decay \
    --entropy-coef 0.01 \
@@ -54,7 +51,9 @@ python -u train_hrl_relmogen.py \
    --checkpoint-index -1 \
    --env-type "relmogen" \
    --config-file "fetch_interactive_nav_s2r_mp_continuous.yaml" \
-   --arena $arena
+   --model-ids Avonia,Avonia,Avonia,candcenter,candcenter,candcenter,gates_jan20,gates_jan20,gates_jan20 \
+   --arena $arena > $log_dir/log &
    # --env-mode "headless" \
    # --num-eval-episodes 100 \
    # --eval-only
+
