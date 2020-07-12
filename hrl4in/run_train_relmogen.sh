@@ -10,7 +10,7 @@ fr_lr="0"             # 0, 100
 init_std_dev_xy="0.6" # 0.6, 1.2
 init_std_dev_z="0.1"
 failed_pnt="0.0"      # 0.0, -0.2
-num_steps="1024"
+num_steps="256"
 ext_col="0.0"         # 0.0, 0.5, 1.0, 2.0
 arena="push_door"
 run="0"
@@ -47,7 +47,7 @@ nohup python -u train_hrl_relmogen.py \
    --meta-agent-normalize-advantage \
    --extrinsic-collision-reward-weight $ext_col \
    --meta-gamma 0.99 \
-   --checkpoint-interval 10 \
+   --checkpoint-interval 50 \
    --checkpoint-index -1 \
    --env-type "relmogen" \
    --config-file "fetch_interactive_nav_s2r_mp_continuous.yaml" \
