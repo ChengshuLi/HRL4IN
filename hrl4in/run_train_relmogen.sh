@@ -36,7 +36,7 @@ nohup python -u train_hrl_relmogen.py \
    --use-linear-lr-decay \
    --use-linear-clip-decay \
    --entropy-coef 0.01 \
-   --log-interval 1 \
+   --log-interval 5 \
    --experiment-folder $log_dir \
    --time-scale 30 \
    --intrinsic-reward-scaling $irs \
