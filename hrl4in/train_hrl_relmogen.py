@@ -504,7 +504,8 @@ def main():
     rollout_observation_space["action_mask"] = gym.spaces.Box(low=0, high=1,
                                                               shape=(action_dim,), dtype=np.float32)
     observation_space = copy.deepcopy(rollout_observation_space)
-    del observation_space["sensor"]
+    if "sensor" in observation_space:
+        del observation_space["sensor"]
     rollout_observation_space = gym.spaces.Dict(rollout_observation_space)
     observation_space = gym.spaces.Dict(observation_space)
 
