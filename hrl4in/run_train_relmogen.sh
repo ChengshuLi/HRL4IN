@@ -49,6 +49,7 @@ python -u train_hrl_relmogen.py \
    --use-action-masks \
    --meta-agent-normalize-advantage \
    --extrinsic-collision-reward-weight $ext_col \
+   --gamma 0.99 \
    --meta-gamma 0.99 \
    --checkpoint-interval 10 \
    --checkpoint-index -1 \
