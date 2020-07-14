@@ -18,6 +18,13 @@ def add_env_args(parser):
         help="environment mode for the simulator (default: headless)",
     )
     group.add_argument(
+        "--model-ids",
+        type=str,
+        default=None,
+        help='a comma-separated list of model ids to overwrite config_file.'
+             'len(model_ids) == num_parallel_environments'
+    )
+    group.add_argument(
         "--action-timestep",
         type=float,
         default=1.0 / 10.0,
