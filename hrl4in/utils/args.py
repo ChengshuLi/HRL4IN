@@ -22,7 +22,14 @@ def add_env_args(parser):
         type=str,
         default=None,
         help='a comma-separated list of model ids to overwrite config_file.'
-             'len(model_ids) == num_parallel_environments'
+             'len(model_ids) == num_train_processes'
+    )
+    group.add_argument(
+        "--model-ids-eval",
+        type=str,
+        default=None,
+        help='a comma-separated list of model ids to overwrite config_file.'
+             'len(model_ids_eval) == num_eval_processes'
     )
     group.add_argument(
         "--action-timestep",

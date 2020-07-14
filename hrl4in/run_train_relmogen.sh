@@ -14,6 +14,7 @@ ext_col="0.0"         # 0.0, 0.5, 1.0, 2.0
 gpu_c="1"
 gpu_g="0"
 model_ids="Avonia,Avonia,Avonia,candcenter,candcenter,candcenter,gates_jan20,gates_jan20,gates_jan20"
+model_ids_eval="Avonia"
 arena="push_door"
 seed="0"
 
@@ -73,6 +74,7 @@ python -u train_hrl_relmogen.py \
    --env-type "relmogen" \
    --config-file "fetch_interactive_nav_s2r_mp_continuous.yaml" \
    --model-ids $model_ids \
+   --model-ids-eval $model_ids_eval \
    --arena $arena > $log_dir/log 2>&1
    # --env-mode "headless" \
    # --num-eval-episodes 100 \
