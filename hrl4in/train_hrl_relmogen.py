@@ -466,10 +466,10 @@ def main():
     # action_mask_choices[1, :] = 1.0
 
     # base, arm
+    action_mask_choices = torch.zeros(2, action_dim, device=device)
+    action_mask_choices[0, 0:2] = 1.0
+    action_mask_choices[1, 2:] = 1.0
     if action_dim == 10:
-        action_mask_choices = torch.zeros(2, action_dim, device=device)
-        action_mask_choices[0, 0:2] = 1.0
-        action_mask_choices[1, 2:] = 1.0
         args.base_only = False
     elif action_dim == 2:
         # pure navigation task
