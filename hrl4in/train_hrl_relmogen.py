@@ -104,6 +104,9 @@ def evaluate(args,
             else:
                 action_masks = torch.ones_like(current_action_masks)
                 subgoal_masks = torch.ones_like(current_subgoal_masks)
+                if args.base_only:
+                    # ignore z-axis of subgoals
+                    subgoal_masks[:, 2] = 0.0
 
             should_use_new_subgoals = (current_subgoals_steps == 0.0).float()
             current_subgoals = should_use_new_subgoals * subgoals + \
@@ -463,9 +466,21 @@ def main():
     # action_mask_choices[1, :] = 1.0
 
     # base, arm
-    action_mask_choices = torch.zeros(2, action_dim, device=device)
-    action_mask_choices[0, 0:2] = 1.0
-    action_mask_choices[1, 2:] = 1.0
+    if action_dim == 10:
+        action_mask_choices = torch.zeros(2, action_dim, device=device)
+        action_mask_choices[0, 0:2] = 1.0
+        action_mask_choices[1, 2:] = 1.0
+        args.base_only = False
+    elif action_dim == 2:
+        # pure navigation task
+        args.use_action_masks = False
+        args.base_only = True
+    elif action_dim == 7:
+        # pure manipulation task
+        args.use_action_masks = False
+        args.base_only = False
+    else:
+        assert False, 'unknown action dim: {}'.format(action_dim)
 
     # # base, arm, base + arm
     # action_mask_choices = torch.zeros(3, action_dim, device=device)
@@ -785,6 +800,9 @@ def main():
                 else:
                     action_masks = torch.ones_like(current_action_masks)
                     subgoal_masks = torch.ones_like(current_subgoal_masks)
+                    if args.base_only:
+                        # ignore z-axis of subgoals
+                        subgoal_masks[:, 2] = 0.0
 
                 should_use_new_subgoals = (
                     current_subgoals_steps == 0.0).float()
