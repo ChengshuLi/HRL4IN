@@ -415,6 +415,7 @@ def main():
             random_height=False,
             automatic_reset=True,
             arena=args.arena,
+            log_dir=args.experiment_folder,
         )
 
     model_ids = args.model_ids.split(',')
