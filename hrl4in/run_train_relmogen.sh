@@ -32,6 +32,11 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+if [ "$arena" == "tabletop_manip" ]; then
+    init_std_dev_xy="0.2"
+    init_std_dev_z="0.05"
+fi
+
 log_dir="/result/hrl4in_baseline_"$arena"_"$seed
 mkdir -p $log_dir
 echo $log_dir
