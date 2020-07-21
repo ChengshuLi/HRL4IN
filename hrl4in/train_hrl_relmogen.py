@@ -525,10 +525,8 @@ def main():
     rollout_observation_space = gym.spaces.Dict(rollout_observation_space)
     observation_space = gym.spaces.Dict(observation_space)
 
-    # 0.05m
-    min_stddev = np.array([0.05, 0.05, 0.05])
-    # 0.5m for xy and 0.1 for z
-    initial_stddev = np.array([0.5, 0.5, 0.1])
+    min_stddev = np.array(args.subgoal_min_std_dev)
+    initial_stddev = np.array(args.subgoal_init_std_dev)
     subgoal_tolerance = torch.tensor(
         min_stddev, dtype=torch.float32, device=device)
 

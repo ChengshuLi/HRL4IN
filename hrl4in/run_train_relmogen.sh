@@ -5,8 +5,10 @@ sgr="0.0"
 lr="1e-4"
 meta_lr="1e-5"        # 1e-4, 1e-5
 fr_lr="0"             # 0, 100
-init_std_dev_xy="0.6" # 0.6, 1.2
+init_std_dev_xy="0.5" # 0.6, 1.2
 init_std_dev_z="0.1"
+min_std_dev_xy="0.05"
+min_std_dev_z="0.05"
 failed_pnt="0.0"      # 0.0, -0.2
 num_steps="256"
 ext_col="0.0"         # 0.0, 0.5, 1.0, 2.0
@@ -33,8 +35,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 if [ "$arena" == "tabletop_manip" ]; then
-    init_std_dev_xy="0.2"
-    init_std_dev_z="0.05"
+    init_std_dev_xy="0.167"
+    init_std_dev_z="0.033"
+    min_std_dev_xy="0.05"
+    min_std_dev_z="0.025"
 fi
 
 log_dir="/result/hrl4in_baseline_"$arena"_"$seed
@@ -69,6 +73,7 @@ python -u train_hrl_relmogen.py \
    --intrinsic-reward-scaling $irs \
    --subgoal-achieved-reward $sgr \
    --subgoal-init-std-dev $init_std_dev_xy $init_std_dev_xy $init_std_dev_z \
+   --subgoal-min-std-dev $min_std_dev_xy $min_std_dev_xy $min_std_dev_z \
    --subgoal-failed-penalty $failed_pnt \
    --use-action-masks \
    --meta-agent-normalize-advantage \
@@ -82,7 +87,7 @@ python -u train_hrl_relmogen.py \
    --model-ids $model_ids \
    --model-ids-eval $model_ids_eval \
    --arena $arena > $log_dir/log 2>&1
-   # --env-mode "headless" \
-   # --num-eval-episodes 100 \
-   # --eval-only
-
+#    --arena $arena \
+#    --env-mode "gui" \
+#    --num-eval-episodes 100 \
+#    --eval-only
