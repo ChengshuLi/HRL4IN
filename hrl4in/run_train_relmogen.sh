@@ -19,6 +19,7 @@ model_ids="Avonia,Avonia,Avonia,candcenter,candcenter,candcenter,gates_jan20,gat
 model_ids_eval="Avonia"
 arena="push_door"
 seed="0"
+num_parallel="16"
 
 ### change default arguments
 while [[ "$#" -gt 0 ]]; do
@@ -29,6 +30,7 @@ while [[ "$#" -gt 0 ]]; do
         --model_ids_eval) model_ids_eval="$2"; shift ;;
         --arena) arena="$2"; shift ;;
         --seed) seed="$2"; shift ;;
+        --num_parallel) num_parallel="$2"; shift ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
@@ -66,7 +68,7 @@ python -u train_hrl_relmogen.py \
    --freeze-lr-n-updates $fr_lr \
    --clip-param 0.1 \
    --value-loss-coef 0.5 \
-   --num-train-processes 9 \
+   --num-train-processes $num_parallel \
    --num-eval-processes 1 \
    --num-steps $num_steps \
    --num-mini-batch 1 \
