@@ -41,6 +41,13 @@ if [ "$arena" == "tabletop_manip" ]; then
     min_std_dev_z="0.025"
 fi
 
+if [ "$arena" == "tabletop_reaching" ]; then
+    init_std_dev_xy="0.167"
+    init_std_dev_z="0.033"
+    min_std_dev_xy="0.05"
+    min_std_dev_z="0.025"
+fi
+
 log_dir="/result/hrl4in_baseline_"$arena"_"$seed
 mkdir -p $log_dir
 echo $log_dir
