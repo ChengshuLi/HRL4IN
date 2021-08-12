@@ -10,9 +10,11 @@ The PPO implementation is partially adopted from [pytorch-a2c-ppo-acktr-gail](ht
 1. Install [iGibson](https://github.com/StanfordVL/iGibson) with the `archive/hrl4in` tag.
 ```
 cd $HOME
-git clone --recursive https://github.com/StanfordVL/iGibson.git
+git clone https://github.com/StanfordVL/iGibson.git
 cd $HOME/iGibson
 git checkout archive/hrl4in
+git submodule init
+git submodule update
 pip install -e .
 ```
 
