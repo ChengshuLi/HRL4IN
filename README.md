@@ -7,12 +7,12 @@ The PPO implementation is partially adopted from [pytorch-a2c-ppo-acktr-gail](ht
 * torchvision==0.2.2
 
 ### Installation
-1. Install [iGibson](https://github.com/StanfordVL/iGibson) with the `hrl4in` branch.
+1. Install [iGibson](https://github.com/StanfordVL/iGibson) with the `archive/hrl4in` tag.
 ```
 cd $HOME
 git clone --recursive https://github.com/StanfordVL/iGibson.git
 cd $HOME/iGibson
-git checkout --track origin/hrl4in
+git checkout archive/hrl4in
 pip install -e .
 ```
 
